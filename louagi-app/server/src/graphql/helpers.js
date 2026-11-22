@@ -269,6 +269,8 @@ export async function joinedRides({ driverId, rideId, status } = {}) {
         r.price_per_seat as ride_price_per_seat,
         r.status as ride_status,
         r.accepts_delivery as ride_accepts_delivery,
+        r.max_delivery_slots as ride_max_delivery_slots,
+        r.delivery_slots_taken as ride_delivery_slots_taken,
         r.created_at as ride_created_at,
         rt.id as route_id,
         rt.origin_city as route_origin_city,

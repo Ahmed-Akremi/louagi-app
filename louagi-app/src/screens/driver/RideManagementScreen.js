@@ -21,6 +21,7 @@ import { FadeSlideIn, PressableScale } from '../../components/motion';
 
 import { ridesApi } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { useDriverLocation } from '../../context/DriverLocationContext';
 import { useToast } from '../../components/Toast';
 import { spacing, radius, typography, withAlpha } from '../../theme';
 import { formatDateTime, statusLabel } from '../../i18n/format';
@@ -47,6 +48,7 @@ export default function RideManagementScreen() {
   const { colors, isDark } = useTheme();
   const { t } = useLocale();
   const { user } = useAuth();
+  const { start: startSharing, stop: stopSharing } = useDriverLocation();
   const nav = useNavigation();
   const route = useRoute();
   const { id } = route.params;
@@ -90,6 +92,13 @@ export default function RideManagementScreen() {
     if (!res.ok) return toast.show(res.error, 'error');
     toast.show(t(STATUS_TOAST_KEY[status] || 'toast:markedAsScheduled'), 'success');
     load();
+    // Passengers can only track a live GPS fix, so the trip's status drives sharing.
+    if (status === 'in_progress') {
+      const sharing = await startSharing().catch(() => false);
+      if (!sharing) toast.show(t('delivery:locationPermissionBody'), 'warning');
+    } else if (ride.status === 'in_progress') {
+      stopSharing();
+    }
   };
 
   const cancel = async () => {
@@ -98,6 +107,7 @@ export default function RideManagementScreen() {
     setBusy(false);
     if (!res.ok) return toast.show(res.error, 'error');
     toast.show(t('toast:rideCancelled', { count: res.cancelled }), 'warning');
+    if (ride.status === 'in_progress') stopSharing();
     load();
   };
 

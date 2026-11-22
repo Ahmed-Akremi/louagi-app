@@ -38,21 +38,27 @@ function maskPlate(plate) {
   return `•• ${s.slice(-3)}`;
 }
 
+// Only offer rides CreateDelivery will accept and that haven't left yet.
+export function isOpenForDelivery(row, now = Date.now()) {
+  return Boolean(row.ride_accepts_delivery)
+    && row.ride_delivery_slots_taken < row.ride_max_delivery_slots
+    && new Date(row.ride_departure_time).getTime() > now;
+}
+
 async function AvailableDeliveryRides({ origin, destination }) {
   const rows = await joinedRides({ status: 'scheduled' });
   return rows
-    .map(toRideResult)
+    .filter((row) => isOpenForDelivery(row))
+    .map((row) => ({
+      ...toRideResult(row),
+      max_delivery_slots: row.ride_max_delivery_slots,
+      delivery_slots_taken: row.ride_delivery_slots_taken,
+    }))
     .filter((ride) => {
       if (origin && ride.route.origin_city.toLowerCase() !== origin.toLowerCase()) return false;
       if (destination && ride.route.destination_city.toLowerCase() !== destination.toLowerCase()) return false;
       return true;
     })
-    .map((ride) => ({
-      ...ride,
-      accepts_delivery: true,
-      max_delivery_slots: 3,
-      delivery_slots_taken: 0,
-    }))
     .sort((a, b) => new Date(a.departure_time) - new Date(b.departure_time));
 }
 

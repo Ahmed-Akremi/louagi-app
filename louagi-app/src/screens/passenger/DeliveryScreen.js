@@ -66,7 +66,7 @@ export default function DeliveryScreen() {
     toast.show(t('delivery:receiptTitle'), 'success');
     setSelectedRide(null);
     setDescription('');
-    nav.navigate('Tabs', { screen: 'Bookings' });
+    nav.navigate('MyDeliveries');
   };
 
   const startNewDelivery = () => {
