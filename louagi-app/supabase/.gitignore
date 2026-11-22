@@ -1,0 +1,4 @@
+# Supabase CLI artefacts. Migrations + seed are versioned; runtime state is not.
+.branches/
+.temp/
+.env
